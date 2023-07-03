@@ -3,9 +3,10 @@ import os
 import time
 from urllib.parse import urlparse
 
-import fastapi
 import httpx
-from fastapi import Depends, HTTPException
+import fastapi
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi import applications, Depends, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import StreamingResponse, RedirectResponse, Response, JSONResponse
@@ -21,12 +22,21 @@ from fastapi_gateway.server.middleware.casbin import casbin_middleware
 
 S = Settings()
 
-app = fastapi.FastAPI()
+app = fastapi.FastAPI(docs_url="/gateway/docs", openapi_url="/gateway/openapi.json")
 init_fastapi_users(app)
 
 client = httpx.AsyncClient(base_url=S.SERVICE_URL)
 
 logger = logging.getLogger(__file__)
+
+
+def swagger_monkey_patch(*args, **kwargs):
+    return get_swagger_ui_html(
+        *args,
+        **kwargs,
+        swagger_js_url="/static/swagger-ui-bundle.js",
+        swagger_css_url="/static/swagger-ui.css",
+    )
 
 
 @app.get("/api/health")
@@ -95,15 +105,23 @@ app.mount(
     name="dashboard"
 )
 
+applications.get_swagger_ui_html = swagger_monkey_patch
+
+static_file_path = os.path.join(os.path.dirname(__file__), 'assets/static')
+app.mount(
+    "/static",
+    StaticFiles(directory=static_file_path),
+    name="static"
+)
+
 app.add_api_route(
     path="/{path:path}",
     endpoint=_reverse_proxy,
     methods=S.PROXY_METHODS,
-    name="api gateway",
-    include_in_schema=True,
+    name="gateway proxy",
+    include_in_schema=False,
     dependencies=[Depends(casbin_middleware), Depends(current_active_user)]
 )
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
