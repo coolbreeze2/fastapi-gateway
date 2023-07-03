@@ -64,6 +64,8 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "SECRET"
     PROXY_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"]
     SERVICE_URL: str = ""
+    COOKIE_MAX_AGE: int = 36000
+    JWT_LIFETIME_SECONDS: int = 36000
 
 
 load_env_from_yaml()

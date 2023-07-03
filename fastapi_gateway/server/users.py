@@ -13,6 +13,7 @@ from fastapi_users.authentication import (
 from fastapi_gateway.server.curd import SQLAlchemyUserDatabase
 from fastapi_gateway.server.depends import get_user_db
 from fastapi_gateway.server.models import User
+from fastapi_gateway.settings import Settings
 
 SECRET = "SECRET"
 
@@ -41,11 +42,11 @@ async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db
 
 bearer_transport = BearerTransport(tokenUrl="/api/auth/jwt/login")
 
-cookie_transport = CookieTransport(cookie_max_age=36000, cookie_secure=False, cookie_httponly=False)
+cookie_transport = CookieTransport(cookie_max_age=Settings.COOKIE_MAX_AGE, cookie_secure=False, cookie_httponly=False)
 
 
 def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+    return JWTStrategy(secret=SECRET, lifetime_seconds=Settings().JWT_LIFETIME_SECONDS)
 
 
 bearer_auth_backend = AuthenticationBackend(
