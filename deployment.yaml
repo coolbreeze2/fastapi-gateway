@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-gateway
+  namespace: default
+  labels:
+    app: fastapi-gateway
+spec:
+  selector:
+    matchLabels:
+      app: fastapi-gateway
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: fastapi-gateway
+    spec:
+      containers:
+      - name: fastapi-gateway
+        image: fastapi-gateway:latest
+        command:
+        - "/bin/sh"
+        args:
+        - "entrypoint.sh"
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 80
+          name: http
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          failureThreshold: 12
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        env:
+          - name: API_DATABASE_CONNECTION_URL
+            value: "postgresql+asyncpg://test:test@postgres:5432/test"
+          - name: SERVICE_URL
+            value: http://your-service.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-gateway
+  namespace: default
+  labels:
+    app: fastapi-gateway
+spec:
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+  selector:
+    app: fastapi-gateway
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fastapi-gateway-ingress
+  namespace: default
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: fastapi-gateway.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: fastapi-gateway
+            port:
+              name: http
