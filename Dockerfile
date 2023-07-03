@@ -7,4 +7,4 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple \
 && pip config set install.trusted-host pypi.tuna.tsinghua.edu.cn \
 && pip install -r requirements.txt
 
-CMD ["sh", "run.sh"]
+CMD ["sh", "entrypoint.sh"]
