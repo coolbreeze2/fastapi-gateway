@@ -24,6 +24,8 @@ S = Settings()
 app = fastapi.FastAPI()
 init_fastapi_users(app)
 
+client = httpx.AsyncClient(base_url=S.SERVICE_URL)
+
 logger = logging.getLogger(__file__)
 
 
@@ -60,7 +62,6 @@ def auth_exception_handler(request: Request, exc: HTTPException):
 
 
 async def _reverse_proxy(request: Request):
-    client = httpx.AsyncClient(base_url=S.SERVICE_URL)
     target_url = request.url.path
     url = httpx.URL(path=target_url,
                     query=request.url.query.encode("utf-8"))
