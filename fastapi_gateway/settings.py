@@ -4,7 +4,7 @@
 # @File    : settings.py
 import json
 import os.path
-from typing import List
+from typing import List, TypedDict
 
 import yaml
 from pydantic import BaseSettings
@@ -59,11 +59,16 @@ LOGGING_CONFIG = {
 }
 
 
+class ProxyRule(TypedDict):
+    path: str
+    target: str
+
+
 class Settings(BaseSettings):
     API_DATABASE_CONNECTION_URL: str = ""
     JWT_SECRET_KEY: str = "SECRET"
     PROXY_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"]
-    SERVICE_URL: str = ""
+    PROXY_RULE: List[ProxyRule] = []
     COOKIE_MAX_AGE: int = 36000
     JWT_LIFETIME_SECONDS: int = 36000
 

@@ -79,8 +79,8 @@ export default {
         password: ''
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', message: '*该字段是必填项' }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword, message: '*该字段是必填项' }]
+        username: [{ required: true, trigger: 'blur', message: '*请填写用户名' }],
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       passwordType: 'password',
       capsTooltip: false,

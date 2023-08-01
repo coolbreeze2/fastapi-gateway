@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-editor-container">
     <div class=" clearfix">
-      <pan-thumb :image="avatar" style="float: left">
+      <pan-thumb :image="avatarUrl" style="float: left">
         Your roles:
         <span v-for="item in roles" :key="item" class="pan-info-roles">{{ item }}</span>
       </pan-thumb>
@@ -27,13 +27,14 @@ export default {
   components: { PanThumb, GithubCorner },
   data() {
     return {
+      avatarUrl: require('@/assets/imgs/avatar.png'),
       emptyGif: 'https://wpimg.wallstcn.com/0e03b7da-db9e-4819-ba10-9016ddfdaed3'
     }
   },
   computed: {
     ...mapGetters([
       'name',
-      'avatar',
+      // 'avatar',
       'roles'
     ])
   }

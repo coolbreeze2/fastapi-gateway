@@ -12,36 +12,36 @@ from fastapi_gateway.server.users import bearer_auth_backend, current_active_use
 
 
 def init_fastapi_users(
-        app: FastAPI,
-        dependencies: Optional[Sequence[Depends]] = None
+    app: FastAPI,
+    dependencies: Optional[Sequence[Depends]] = None
 ):
     app.include_router(
         fastapi_users.get_auth_router(bearer_auth_backend),
-        prefix="/api/auth/jwt",
+        prefix="/gateway/api/auth/jwt",
         tags=["auth"],
         dependencies=dependencies
     )
     app.include_router(
         fastapi_users.get_register_router(UserRead, UserCreate),
-        prefix="/api/auth",
+        prefix="/gateway/api/auth",
         tags=["auth"],
         dependencies=dependencies
     )
     app.include_router(
         fastapi_users.get_reset_password_router(),
-        prefix="/api/auth",
+        prefix="/gateway/api/auth",
         tags=["auth"],
         dependencies=dependencies
     )
     app.include_router(
         fastapi_users.get_verify_router(UserRead),
-        prefix="/api/auth",
+        prefix="/gateway/api/auth",
         tags=["auth"],
         dependencies=dependencies
     )
     app.include_router(
         fastapi_users.get_users_router(UserRead, UserUpdate),
-        prefix="/api/users",
+        prefix="/gateway/api/users",
         tags=["users"],
         dependencies=dependencies
     )
@@ -49,19 +49,19 @@ def init_fastapi_users(
     router = APIRouter()
 
     @router.get(
-        "/api/users",
+        "/gateway/api/users",
         response_model=UserList,
         name="users:list_users",
     )
     async def get_user_list(
-            user_db: SQLAlchemyUserDatabase = Depends(get_user_db),
-            page: int = 1,
-            limit: int = 10
+        user_db: SQLAlchemyUserDatabase = Depends(get_user_db),
+        page: int = 1,
+        limit: int = 10
     ):
         users, total = await user_db.list(page, limit)
         return {"data": users, "total": total}
 
-    @router.get("/api/authenticated-route")
+    @router.get("/gateway/api/authenticated-route")
     async def authenticated_route(user: User = Depends(current_active_user)):
         return {"message": f"Hello {user.email}!"}
 
@@ -83,6 +83,8 @@ def get_user_routes(app):
     routes = app.router.routes
     user_routes = []
     for route in routes:
-        if isinstance(route, Route) and route.path.startswith("/api/auth") or route.path.startswith("/api/users"):
+        if isinstance(route, Route) and route.path.startswith("/gateway/api/auth") or route.path.startswith(
+            "/gateway/api/users"
+        ):
             user_routes.append(route)
     return user_routes

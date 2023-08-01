@@ -1,18 +1,16 @@
 import logging
 import os
 import time
-from urllib.parse import urlparse
 
-import httpx
 import fastapi
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi import applications, Depends, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import StreamingResponse, RedirectResponse, Response, JSONResponse
-from starlette.background import BackgroundTask
+from starlette.responses import RedirectResponse, Response, JSONResponse
 from starlette.staticfiles import StaticFiles
 
+from fastapi_gateway.server.router.proxy import reverse_proxy
 from fastapi_gateway.settings import load_env_from_yaml, Settings
 
 load_env_from_yaml()
@@ -24,8 +22,6 @@ S = Settings()
 
 app = fastapi.FastAPI(docs_url="/gateway/docs", openapi_url="/gateway/openapi.json")
 init_fastapi_users(app)
-
-client = httpx.AsyncClient(base_url=S.SERVICE_URL)
 
 logger = logging.getLogger(__file__)
 
@@ -39,13 +35,14 @@ def swagger_monkey_patch(*args, **kwargs):
     )
 
 
-@app.get("/api/health")
+@app.get("/gateway/api/health")
 async def check_health():
     return {"status": 1, "time": time.time()}
 
 
-@app.get("/dashboard")
-async def main():
+@app.get("/gateway/dashboard")
+async def dashboard():
+    """dashboard"""
     index_dir = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), "dashboard"
     )
@@ -62,7 +59,7 @@ def auth_exception_handler(request: Request, exc: HTTPException):
     msg = f"{exc.detail}\n{request.headers}"
     if exc.status_code == 401:
         logger.error(f"触发异常, 请求未认证\n{msg}")
-        return RedirectResponse(url='/dashboard')
+        return RedirectResponse(url='/gateway/dashboard')
     else:
         logger.error(msg)
         return JSONResponse(
@@ -71,42 +68,19 @@ def auth_exception_handler(request: Request, exc: HTTPException):
         )
 
 
-async def _reverse_proxy(request: Request):
-    target_url = request.url.path
-    url = httpx.URL(path=target_url,
-                    query=request.url.query.encode("utf-8"))
-    request.scope.update()
-    headers = request.headers.raw
-
-    domain = urlparse(S.SERVICE_URL).netloc
-    headers[0] = (b'host', domain.encode())
-    rp_req = client.build_request(request.method,
-                                  url,
-                                  headers=headers,
-                                  content=await request.body())
-    s_time = time.time()
-    rp_resp = await client.send(rp_req, stream=True)
-    logger.info(f"{time.time() - s_time}s proxy '{rp_req.url}', resp: {rp_resp}\n{request.headers}")
-    return StreamingResponse(
-        rp_resp.aiter_raw(),
-        status_code=rp_resp.status_code,
-        headers=rp_resp.headers,
-        background=BackgroundTask(rp_resp.aclose),
-    )
-
-
+# 后台管理
 app.mount(
-    "/dashboard",
+    "/gateway",
     StaticFiles(
         directory=os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "dashboard"
         )
     ),
-    name="dashboard"
+    name="gatewayDashboard"
 )
 
+# swagger 静态文件源使用本服务自身提供，替代 cdn
 applications.get_swagger_ui_html = swagger_monkey_patch
-
 static_file_path = os.path.join(os.path.dirname(__file__), 'assets/static')
 app.mount(
     "/static",
@@ -114,14 +88,17 @@ app.mount(
     name="static"
 )
 
+# 路由转发
 app.add_api_route(
     path="/{path:path}",
-    endpoint=_reverse_proxy,
+    endpoint=reverse_proxy,
     methods=S.PROXY_METHODS,
     name="gateway proxy",
     include_in_schema=False,
-    dependencies=[Depends(casbin_middleware), Depends(current_active_user)]
+    dependencies=[Depends(casbin_middleware), Depends(current_active_user)],
 )
+
+# 跨域允许所有源
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
