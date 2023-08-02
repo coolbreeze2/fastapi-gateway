@@ -66,6 +66,7 @@ class ProxyRule(TypedDict):
 
 class Settings(BaseSettings):
     API_DATABASE_CONNECTION_URL: str = ""
+    REDIS_URL: str = ""
     JWT_SECRET_KEY: str = "SECRET"
     PROXY_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"]
     PROXY_RULE: List[ProxyRule] = []

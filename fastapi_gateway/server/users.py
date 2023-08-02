@@ -1,13 +1,14 @@
 import uuid
 from typing import Optional
 
+import redis.asyncio
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
     BearerTransport,
-    JWTStrategy,
-    CookieTransport
+    CookieTransport,
+    RedisStrategy
 )
 
 from fastapi_gateway.server.curd import SQLAlchemyUserDatabase
@@ -44,21 +45,23 @@ bearer_transport = BearerTransport(tokenUrl="/api/auth/jwt/login")
 
 cookie_transport = CookieTransport(cookie_max_age=Settings().COOKIE_MAX_AGE, cookie_secure=False, cookie_httponly=False)
 
+redis = redis.asyncio.from_url(Settings().REDIS_URL, decode_responses=True)
 
-def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET, lifetime_seconds=Settings().JWT_LIFETIME_SECONDS)
+
+def get_redis_strategy() -> RedisStrategy:
+    return RedisStrategy(redis, lifetime_seconds=Settings().JWT_LIFETIME_SECONDS)
 
 
 bearer_auth_backend = AuthenticationBackend(
-    name="jwt",
+    name="bearer",
     transport=bearer_transport,
-    get_strategy=get_jwt_strategy,
+    get_strategy=get_redis_strategy,
 )
 
 cookie_auth_backend = AuthenticationBackend(
     name="cookies",
     transport=cookie_transport,
-    get_strategy=get_jwt_strategy,
+    get_strategy=get_redis_strategy,
 )
 
 fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [bearer_auth_backend, cookie_auth_backend])
