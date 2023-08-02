@@ -11,6 +11,7 @@ import Layout from '@/layout'
 // import chartsRouter from './modules/charts'
 // import tableRouter from './modules/table'
 import userRouter from './modules/users'
+import prefectRouter from './modules/prefect'
 // import nestedRouter from './modules/nested'
 
 /**
@@ -79,7 +80,7 @@ export const constantRoutes = [
       {
         path: 'dashboard',
         component: () => import('@/views/dashboard/index'),
-        name: 'dashboard',
+        name: '首页',
         meta: { title: '首页', icon: 'dashboard', affix: true }
       }
     ]
@@ -166,6 +167,7 @@ export const asyncRoutes = [
   // nestedRouter,
   // tableRouter,
   userRouter,
+  prefectRouter,
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]
