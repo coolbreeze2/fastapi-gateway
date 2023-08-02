@@ -23,6 +23,8 @@ def get_proxy_url(path: str, rule: List[ProxyRule]) -> str:
     获取指定路由下的目的路由
     """
     # 根据路由路径字符长度排序，优先匹配字符长的路由
+    # TODO: 使用前缀树匹配算法
+    # TODO: 支持从数据库加载路由规则，并支持热加载
     score = -1
     match_route = None
     for route in rule:
@@ -33,18 +35,23 @@ def get_proxy_url(path: str, rule: List[ProxyRule]) -> str:
                 match_route = route
     if not match_route:
         return ""
-    return urljoin(match_route["target"], path[score:])
+    if match_route["target"][-1] == '/':
+        target_url = match_route["target"] + path[score + 1:]
+    else:
+        target_url = urljoin(match_route["target"], path[score:])
+    return target_url
 
 
 async def reverse_proxy(request: Request):
     """路由转发"""
-    logger.info(f"请求正在转发: {request.url.path}")
+    logger.info(f"request is proxying: {request.url.path}")
     request.scope.update()
     request_path = request.url.path
     s = Settings()
     target_url = get_proxy_url(request_path, s.PROXY_RULE)
+    logger.info(f"request '{request.url.path}' proxy to {request_path}")
     if not target_url:
-        raise HTTPException(status_code=404, detail=f"Proxy 404 Not Found")
+        raise HTTPException(status_code=404, detail=f"Proxy '{request_path}' 404 Not Found")
     headers = request.headers.raw
     domain = urlparse(target_url).netloc
     headers[0] = (b'host', domain.encode())
