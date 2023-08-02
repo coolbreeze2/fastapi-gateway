@@ -35,6 +35,11 @@ def swagger_monkey_patch(*args, **kwargs):
     )
 
 
+@app.get("/")
+async def root():
+    return RedirectResponse(url='/gateway/dashboard')
+
+
 @app.get("/gateway/api/health")
 async def check_health():
     return {"status": 1, "time": time.time()}
