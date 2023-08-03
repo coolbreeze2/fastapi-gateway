@@ -51,14 +51,15 @@ const actions = {
         const data = response
 
         if (!data) {
-          reject('Verification failed, please Login again.')
+          reject('请重新登录')
         }
 
         const { roles, username } = data
 
         // roles must be a non-empty array
         if (!roles || roles.length <= 0) {
-          reject('getInfo: roles must be a non-null array!')
+          // reject('getInfo: roles must be a non-null array!')
+          reject('请重新登录')
         }
 
         commit('SET_ROLES', roles)
