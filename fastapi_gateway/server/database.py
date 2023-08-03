@@ -9,7 +9,7 @@ DATABASE_URL = Settings().API_DATABASE_CONNECTION_URL
 
 Base = declarative_base()
 
-engine = create_async_engine(DATABASE_URL)
+engine = create_async_engine(DATABASE_URL, pool_pre_ping=True, pool_use_lifo=True)
 async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
