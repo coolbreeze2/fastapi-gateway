@@ -43,13 +43,17 @@ async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db
 
 bearer_transport = BearerTransport(tokenUrl="/api/auth/jwt/login")
 
-cookie_transport = CookieTransport(cookie_max_age=Settings().COOKIE_MAX_AGE, cookie_secure=False, cookie_httponly=False)
+cookie_transport = CookieTransport(
+    cookie_max_age=Settings().TOKEN_EXPIRED_SECONDS,
+    cookie_secure=False,
+    cookie_httponly=False
+)
 
 redis = redis.asyncio.from_url(Settings().REDIS_URL, decode_responses=True)
 
 
 def get_redis_strategy() -> RedisStrategy:
-    return RedisStrategy(redis, lifetime_seconds=Settings().JWT_LIFETIME_SECONDS)
+    return RedisStrategy(redis, lifetime_seconds=Settings().TOKEN_EXPIRED_SECONDS)
 
 
 bearer_auth_backend = AuthenticationBackend(

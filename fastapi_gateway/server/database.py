@@ -5,7 +5,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 from fastapi_gateway.settings import Settings
 
-DATABASE_URL = Settings().API_DATABASE_CONNECTION_URL
+DATABASE_URL = Settings().DATABASE_CONNECTION_URL
 
 Base = declarative_base()
 

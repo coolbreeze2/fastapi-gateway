@@ -65,13 +65,19 @@ class ProxyRule(TypedDict):
 
 
 class Settings(BaseSettings):
-    API_DATABASE_CONNECTION_URL: str = ""
+    # TODO: 支持从数据库读取配置
+    # postgres 数据库地址
+    DATABASE_CONNECTION_URL: str = ""
+    # Redis 地址
     REDIS_URL: str = ""
-    JWT_SECRET_KEY: str = "SECRET"
+    # 支持转发的 http method
     PROXY_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"]
+    # 路由转发规则
     PROXY_RULE: List[ProxyRule] = []
-    COOKIE_MAX_AGE: int = 36000
-    JWT_LIFETIME_SECONDS: int = 36000
+    # token 有效期
+    TOKEN_EXPIRED_SECONDS: int = 36000
+    # 鉴权排除的路径 TODO: 考虑写入 casbin rule policy
+    EXCLUDE_AUTH_PATHS: List[str] = ["/", "/gateway/docs", "/gateway/openapi.json", "/gateway/auth/jwt/login"]
 
 
 load_env_from_yaml()

@@ -9,6 +9,7 @@ from starlette.status import HTTP_403_FORBIDDEN
 from fastapi_gateway.server.curd import Adapter, casbin_model
 from fastapi_gateway.server.models import User
 from fastapi_gateway.server.users import current_active_user
+from fastapi_gateway.settings import Settings
 
 
 class CasbinMiddleware:
@@ -19,18 +20,15 @@ class CasbinMiddleware:
     def __init__(
         self,
         enforcer: Enforcer,
-        exclude_paths: List[str] = None,
         exclude_users: List[str] = None
     ) -> None:
         """
         Configure Casbin Middleware
 
         :param enforcer: Casbin Enforcer, must be initialized before FastAPI start.
-        :param exclude_paths
         :param exclude_users
         """
         self.enforcer = enforcer
-        self.exclude_paths = exclude_paths
         self.exclude_users = exclude_users
 
     async def __call__(self, request: Request, user: User = Depends(current_active_user)) -> None:
@@ -52,7 +50,8 @@ class CasbinMiddleware:
         method = request.method
         if self.exclude_users and user.username in self.exclude_users:
             return True
-        if self.exclude_paths and path in self.exclude_paths:
+        exclude_auth_paths = Settings().EXCLUDE_AUTH_PATHS
+        if exclude_auth_paths and path in exclude_auth_paths:
             return True
         if not user:
             raise RuntimeError("Casbin Middleware must work with an Authentication Middleware")
@@ -67,6 +66,5 @@ class CasbinMiddleware:
 adapter = Adapter(model=casbin_model)
 enforcer = casbin.Enforcer(casbin_model, adapter)
 casbin_middleware = CasbinMiddleware(
-    enforcer=enforcer,
-    exclude_paths=["/docs", "/openapi.json", "/auth/jwt/login"]
+    enforcer=enforcer
 )
