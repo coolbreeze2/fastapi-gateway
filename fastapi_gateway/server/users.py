@@ -49,7 +49,7 @@ cookie_transport = CookieTransport(
     cookie_httponly=False
 )
 
-redis = redis.asyncio.from_url(Settings().REDIS_URL, decode_responses=True)
+redis = redis.asyncio.from_url(Settings().REDIS_URL, decode_responses=True, health_check_interval=30)
 
 
 def get_redis_strategy() -> RedisStrategy:
