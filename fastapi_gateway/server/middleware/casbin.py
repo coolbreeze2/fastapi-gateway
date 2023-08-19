@@ -6,7 +6,7 @@ from fastapi import Depends, HTTPException
 from starlette.requests import Request
 from starlette.status import HTTP_403_FORBIDDEN
 
-from fastapi_gateway.server.curd import Adapter, casbin_model
+from fastapi_gateway.server.curd.casbin import Adapter, casbin_model
 from fastapi_gateway.server.models import User
 from fastapi_gateway.server.users import current_active_user
 from fastapi_gateway.settings import Settings

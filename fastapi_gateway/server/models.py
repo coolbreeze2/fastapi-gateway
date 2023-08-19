@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import String, Boolean, Column, Integer, ARRAY, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 from .database import Base
 
@@ -49,3 +49,11 @@ class CasbinRule(Common, Base):
 
     def __repr__(self):
         return '<CasbinRule {}: "{}">'.format(self.id, str(self))
+
+
+class Configuration(Common, Base):
+    __tablename__ = "configuration"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    key = Column(String(64), unique=True)
+    value = Column(JSONB)

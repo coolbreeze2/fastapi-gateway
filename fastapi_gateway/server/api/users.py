@@ -3,7 +3,8 @@ from typing import Optional, Sequence
 from fastapi import Depends, FastAPI, APIRouter
 from starlette.routing import Route
 
-from fastapi_gateway.server.curd import SQLAlchemyUserDatabase, create_admin_user, create_init_rules
+from fastapi_gateway.server.curd.casbin import create_init_rules
+from fastapi_gateway.server.curd.user import SQLAlchemyUserDatabase, create_admin_user
 from fastapi_gateway.server.database import create_db_and_tables
 from fastapi_gateway.server.depends import get_user_db
 from fastapi_gateway.server.models import User
@@ -70,13 +71,6 @@ def init_fastapi_users(
         tags=["users"],
         dependencies=dependencies
     )
-
-    @app.on_event("startup")
-    async def on_startup():
-        # Not needed if you setup a migration system like Alembic
-        await create_db_and_tables()
-        await create_admin_user()
-        await create_init_rules()
 
 
 def get_user_routes(app):

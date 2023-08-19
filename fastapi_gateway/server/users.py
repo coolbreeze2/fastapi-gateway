@@ -11,7 +11,7 @@ from fastapi_users.authentication import (
     RedisStrategy
 )
 
-from fastapi_gateway.server.curd import SQLAlchemyUserDatabase
+from fastapi_gateway.server.curd.user import SQLAlchemyUserDatabase
 from fastapi_gateway.server.depends import get_user_db
 from fastapi_gateway.server.models import User
 from fastapi_gateway.settings import Settings

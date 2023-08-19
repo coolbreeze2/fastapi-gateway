@@ -2,8 +2,8 @@ from typing import List
 
 import pytest
 
+from fastapi_gateway.server.curd.configuration import ProxyRule
 from fastapi_gateway.server.router.proxy import get_proxy_url
-from fastapi_gateway.settings import ProxyRule
 
 
 @pytest.mark.parametrize(

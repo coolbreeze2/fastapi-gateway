@@ -11,7 +11,7 @@ from starlette.responses import StreamingResponse
 from starlette.exceptions import HTTPException
 from starlette.background import BackgroundTask
 
-from fastapi_gateway.settings import Settings, ProxyRule
+from fastapi_gateway.server.curd.configuration import ProxyRule, HotSetting
 
 logger = logging.getLogger(__file__)
 
@@ -47,8 +47,8 @@ async def reverse_proxy(request: Request):
     logger.info(f"request is proxying: {request.url.path}")
     request.scope.update()
     request_path = request.url.path
-    s = Settings()
-    target_url = get_proxy_url(request_path, s.PROXY_RULE)
+    logger.info(f"HotSetting.PROXY_RULE: {HotSetting.PROXY_RULE}")
+    target_url = get_proxy_url(request_path, HotSetting.PROXY_RULE)
     logger.info(f"request '{request.url.path}' proxy to {target_url}")
     if not target_url:
         raise HTTPException(status_code=404, detail=f"Proxy '{request_path}' 404 Not Found")

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.exceptions import HTTPException
 
-from fastapi_gateway.server.curd import SQLAlchemyUserDatabase
+from fastapi_gateway.server.curd.user import SQLAlchemyUserDatabase
 from fastapi_gateway.server.database import get_async_session
 from fastapi_gateway.server.models import User
 
