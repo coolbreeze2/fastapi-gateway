@@ -3,13 +3,12 @@ from typing import Optional, Sequence
 from fastapi import Depends, FastAPI, APIRouter
 from starlette.routing import Route
 
-from fastapi_gateway.server.curd.casbin import create_init_rules
-from fastapi_gateway.server.curd.user import SQLAlchemyUserDatabase, create_admin_user
-from fastapi_gateway.server.database import create_db_and_tables
+from fastapi_gateway.server.curd.user import SQLAlchemyUserDatabase
 from fastapi_gateway.server.depends import get_user_db
 from fastapi_gateway.server.models import User
 from fastapi_gateway.server.schemas import UserCreate, UserRead, UserUpdate, UserList
-from fastapi_gateway.server.users import bearer_auth_backend, current_active_user, fastapi_users
+from fastapi_gateway.server.users import bearer_auth_backend, current_active_user, fastapi_users, \
+    get_change_password_router
 
 
 def init_fastapi_users(
@@ -36,6 +35,12 @@ def init_fastapi_users(
     )
     app.include_router(
         fastapi_users.get_verify_router(UserRead),
+        prefix="/gateway/api/auth",
+        tags=["auth"],
+        dependencies=dependencies
+    )
+    app.include_router(
+        get_change_password_router(),
         prefix="/gateway/api/auth",
         tags=["auth"],
         dependencies=dependencies
