@@ -54,6 +54,7 @@ class HotSetting(object):
 
     @classmethod
     async def reload_config(cls, session: AsyncSession):
+        await cls.init_config(session)
         # 从数据库重新加载配置
         stmt = select(Configuration)
         configurations = (await session.scalars(stmt)).all()
@@ -63,6 +64,14 @@ class HotSetting(object):
         HotSettingSchema(**obj)
         for c in configurations:
             setattr(cls, c.key, c.value)
+
+    @classmethod
+    async def init_config(cls, session: AsyncSession):
+        proxy_rule = await cls.get_config(session, "PROXY_RULE")
+        if not proxy_rule:
+            proxy_rule = Configuration(**{"key": "PROXY_RULE", "value": []})  # noqa
+            session.add(proxy_rule)
+            await session.commit()
 
     @classmethod
     async def update_config(cls, session: AsyncSession, key: str, value: Union[dict, list]):
