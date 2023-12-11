@@ -10,7 +10,7 @@ def init_event(app: FastAPI):
     @app.on_event("startup")
     async def on_startup():
         # Not needed if you setup a migration system like Alembic
-        await init_configuration()
         await create_db_and_tables()
+        await init_configuration()
         await create_admin_user()
         await create_init_rules()
